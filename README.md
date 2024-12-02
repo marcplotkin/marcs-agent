@@ -1,16 +1,68 @@
 # Marc's Agent Web App
 
-This is a React application built by Marc's Agent.
+This application consists of a React frontend and Node.js backend with Spotify integration.
 
-## Getting Started
+## Project Structure
+```
+./
+├── frontend/     # React frontend application
+├── backend/      # Node.js backend server
+└── deploy/       # Deployment configurations
+```
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Start the development server: `npm start`
-4. Build for production: `npm run build`
+## Local Development
 
-The app will be available at http://localhost:3000 in development mode.
+### Frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### Backend
+```bash
+cd backend
+npm install
+npm run dev
+```
 
 ## Deployment
 
-After running `npm run build`, the production-ready files will be in the `build` directory. These can be deployed to any static hosting service.
+### Frontend (S3 + CloudFront)
+1. Build the frontend:
+   ```bash
+   cd frontend
+   npm run build
+   ```
+2. Deploy using AWS CloudFormation:
+   ```bash
+   aws cloudformation deploy \
+     --template-file deploy/frontend/s3-cloudfront.yml \
+     --stack-name marcs-agent-frontend \
+     --parameter-overrides DomainName=your-domain-name
+   ```
+3. Upload build files:
+   ```bash
+   aws s3 sync frontend/build/ s3://your-bucket-name/
+   ```
+
+### Backend (EC2)
+1. Launch EC2 instance using Amazon Linux 2
+2. Use the user-data script in deploy/backend/user-data.sh
+3. Configure security group to allow inbound traffic on port 3001
+
+## Environment Variables
+
+### Frontend (.env.local)
+```
+REACT_APP_API_URL=http://your-backend-url:3001
+REACT_APP_SPOTIFY_CLIENT_ID=your_client_id
+```
+
+### Backend (.env)
+```
+PORT=3001
+SPOTIFY_CLIENT_ID=your_client_id
+SPOTIFY_CLIENT_SECRET=your_client_secret
+FRONTEND_URL=http://your-frontend-url
+```
